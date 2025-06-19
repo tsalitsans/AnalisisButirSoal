@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Butir Soal - Sistem Analisis Item Test</title>
+    <meta name="description" content="Sistem analisis butir soal otomatis untuk menghitung tingkat kesukaran, daya pembeda, validitas, dan reliabilitas tes.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #f8faf7 0%, #f1f5ef 100%);
+    color: #525849;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Header */
+.header {
+    background: white;
+    border-bottom: 1px solid #e0eadb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    background: #9CAF88;
+    padding: 8px;
+    border-radius: 8px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-text h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #646f5a;
+    margin-bottom: 2px;
+}
+
+.header-text p {
+    font-size: 14px;
+    color: #8FA68E;
+}
+
+.reset-btn {
+    padding: 8px 16px;
+    color: #8FA68E;
+    background: transparent;
+    border: 1px solid #c9d6c1;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.reset-btn:hover {
+    background: #f8faf7;
+    color: #646f5a;
+}
+
+/* Progress Steps */
+.progress-container {
+    padding: 16px 0;
+}
+
+.progress-steps {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #a8b89e;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.step.active {
+    color: #8FA68E;
+}
+
+.step-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0eadb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a8b89e;
+}
+
+.step.active .step-icon {
+    background: #9CAF88;
+    color: white;
+}
+
+.step-line {
+    width: 32px;
+    height: 2px;
+    background: #e0eadb;
+}
+
+.step.active + .step-line,
+.step-line.active {
+    background: #9CAF88;
+}
+
+/* Main Content */
+.main {
+    padding: 32px 0;
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+/* Setup Form */
+.setup-form {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 32px;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.form-icon {
+    width: 64px;
+    height: 64px;
+    background: #f1f5ef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    color: #8FA68E;
+}
+
+.form-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #646f5a;
+    margin-bottom: 8px;
+}
+
+.form-header p {
+    color: #8FA68E;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #646f5a;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #c9d6c1;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #9CAF88;
+    box-shadow: 0 0 0 3px rgba(156, 175, 136, 0.1);
+}
+
+.form-group input.error {
+    border-color: #ef4444;
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 14px;
+    margin-top: 4px;
+    display: none;
+}
+
+.error-message.show {
+    display: block;
+}
+
+.help-text {
+    font-size: 14px;
+    color: #8FA68E;
+    margin-top: 4px;
+}
+
+.info-box {
+    background: #f8faf7;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.info-box h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #646f5a;
+    margin-bottom: 8px;
+}
+
+.info-box ul {
+    list-style: none;
+    color: #8FA68E;
+    font-size: 14px;
+}
+
+.info-box li {
+    margin-bottom: 4px;
+}
+
+/* Buttons */
+.btn-primary {
+    background: #9CAF88;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background: #8FA68E;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #646f5a;
+    border: 1px solid #c9d6c1;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn-secondary:hover {
+    background: #f8faf7;
+    border-color: #9CAF88;
+}
+
+/* Data Entry */
+.data-entry {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+    border-bottom: 1px solid #e0eadb;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-icon {
+    width: 48px;
+    height: 48px;
+    background: #f1f5ef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8FA68E;
+}
+
+.section-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #646f5a;
+    margin-bottom: 4px;
+}
+
+.section-header p {
+    color: #8FA68E;
+    font-size: 14px;
+}
+
+.correct-answers {
+    background: #f8faf7;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e0eadb;
+}
+
+.correct-answers h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #646f5a;
+    margin-bottom: 12px;
+}
+
+.answers-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.answer-item {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #c9d6c1;
+    font-size: 14px;
+}
+
+.answer-number {
+    color: #8FA68E;
+    margin-right: 4px;
+}
+
+.answer-value {
+    font-weight: 600;
+    color: #646f5a;
+}
+
+.import-section {
+    padding: 24px;
+    border-bottom: 1px solid #e0eadb;
+}
+
+.import-section h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #646f5a;
+    margin-bottom: 16px;
+}
+
+.import-section textarea {
+    width: 100%;
+    height: 120px;
+    padding: 12px 16px;
+    border: 1px solid #c9d6c1;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Inter', monospace;
+    resize: vertical;
+    margin-bottom: 16px;
+}
+
+.import-section textarea:focus {
+    outline: none;
+    border-color: #9CAF88;
+    box-shadow: 0 0 0 3px rgba(156, 175, 136, 0.1);
+}
+
+.import-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.import-actions .btn-primary,
+.import-actions .btn-secondary {
+    width: auto;
+}
+
+.data-table-container {
+    padding: 24px;
+}
+
+.table-header {
+    margin-bottom: 16px;
+}
+
+.table-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #646f5a;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #e0eadb;
+    border-radius: 8px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.data-table th {
+    background: #f8faf7;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: #646f5a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e0eadb;
+}
+
+.data-table th.name-column {
+    width: 200px;
+    min-width: 200px;
+}
+
+.data-table th.question-column {
+    width: 48px;
+    min-width: 48px;
+    text-align: center;
+}
+
+.data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0eadb;
+}
+
+.data-table tr:hover {
+    background: #f8faf7;
+}
+
+.data-table input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #c9d6c1;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.data-table input:focus {
+    outline: none;
+    border-color: #9CAF88;
+    box-shadow: 0 0 0 2px rgba(156, 175, 136, 0.1);
+}
+
+.data-table .answer-input {
+    width: 32px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.data-table .answer-input.correct {
+    background: #f0fdf4;
+    border-color: #22c55e;
+}
+
+.data-table .answer-input.error {
+    border-color: #ef4444;
+    background: #fef2f2;
+}
+
+.section-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 24px;
+    background: #f8faf7;
+}
+
+.section-actions .btn-primary,
+.section-actions .btn-secondary {
+    width: auto;
+}
+
+/* Results Display */
+.results-display {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    padding: 24px;
+}
+
+.summary-card {
+    background: white;
+    border: 1px solid #e0eadb;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.card-icon.blue { background: #3b82f6; }
+.card-icon.green { background: #10b981; }
+.card-icon.purple { background: #8b5cf6; }
+.card-icon.orange { background: #f59e0b; }
+
+.card-content p {
+    font-size: 14px;
+    color: #8FA68E;
+    margin-bottom: 4px;
+}
+
+.card-content span {
+    font-size: 20px;
+    font-weight: 700;
+    color: #646f5a;
+}
+
+.results-tabs {
+    border-top: 1px solid #e0eadb;
+}
+
+.tab-nav {
+    display: flex;
+    border-bottom: 1px solid #e0eadb;
+    padding: 0 24px;
+    overflow-x: auto;
+}
+
+.tab-btn {
+    padding: 16px 24px;
+    border: none;
+    background: transparent;
+    color: #8FA68E;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: #646f5a;
+    background: #f8faf7;
+}
+
+.tab-btn.active {
+    color: #8FA68E;
+    border-bottom-color: #9CAF88;
+}
+
+.tab-content {
+    padding: 24px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 1px solid #e0eadb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.results-table th {
+    background: #f8faf7;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: #646f5a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e0eadb;
+}
+
+.results-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0eadb;
+    font-size: 14px;
+}
+
+.results-table tr:hover {
+    background: #f8faf7;
+}
+
+.category-badge {
+    display: inline-flex;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.category-badge.excellent { background: #dcfce7; color: #166534; }
+.category-badge.good { background: #dbeafe; color: #1e40af; }
+.category-badge.fair { background: #fef3c7; color: #92400e; }
+.category-badge.poor { background: #fee2e2; color: #991b1b; }
+
+.interpretation-box {
+    background: #f8faf7;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.interpretation-box h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #646f5a;
+    margin-bottom: 8px;
+}
+
+.interpretation-box p {
+    color: #8FA68E;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.interpretation-box ul {
+    list-style: none;
+    color: #8FA68E;
+    font-size: 14px;
+}
+
+.interpretation-box li {
+    margin-bottom: 4px;
+}
+
+.interpretation-box .excellent { color: #166534; font-weight: 600; }
+.interpretation-box .good { color: #1e40af; font-weight: 600; }
+.interpretation-box .fair { color: #92400e; font-weight: 600; }
+.interpretation-box .poor { color: #991b1b; font-weight: 600; }
+.interpretation-box .easy { color: #166534; font-weight: 600; }
+.interpretation-box .medium { color: #92400e; font-weight: 600; }
+.interpretation-box .hard { color: #991b1b; font-weight: 600; }
+
+.metric-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.metric-card {
+    background: #f8faf7;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.metric-card-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.metric-card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #646f5a;
+}
+
+.metric-card-category {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.metric-card-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #646f5a;
+    margin-bottom: 8px;
+}
+
+.metric-progress {
+    width: 100%;
+    height: 8px;
+    background: #e0eadb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.metric-progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.reliability-display {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.reliability-value {
+    background: white;
+    border: 1px solid #e0eadb;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+}
+
+.reliability-value .value {
+    font-size: 48px;
+    font-weight: 700;
+    color: #646f5a;
+    margin-bottom: 8px;
+}
+
+.reliability-value .category {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 16px;
+    background: #e0eadb;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.progress {
+    height: 100%;
+    background: #9CAF88;
+    border-radius: 8px;
+    transition: width 0.5s ease;
+}
+
+.reliability-value p {
+    font-size: 14px;
+    color: #8FA68E;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+    
+    .header-content {
+        height: 56px;
+    }
+    
+    .header-text h1 {
+        font-size: 18px;
+    }
+    
+    .progress-steps {
+        gap: 8px;
+    }
+    
+    .step span {
+        display: none;
+    }
+    
+    .step-line {
+        width: 16px;
+    }
+    
+    .setup-form {
+        padding: 24px;
+    }
+    
+    .form-icon {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .form-header h2 {
+        font-size: 20px;
+    }
+    
+    .summary-cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px;
+    }
+    
+    .tab-nav {
+        padding: 0 16px;
+    }
+    
+    .tab-btn {
+        padding: 12px 16px;
+        font-size: 12px;
+    }
+    
+    .tab-content {
+        padding: 16px;
+    }
+    
+    .section-actions {
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+    }
+    
+    .section-actions .btn-primary,
+    .section-actions .btn-secondary {
+        width: 100%;
+    }
+    
+    .import-actions {
+        flex-direction: column;
+    }
+    
+    .import-actions .btn-primary,
+    .import-actions .btn-secondary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .data-table th.name-column {
+        width: 150px;
+        min-width: 150px;
+    }
+    
+    .metric-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading Animation */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 64px;
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e0eadb;
+    border-top: 4px solid #9CAF88;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    margin-top: 16px;
+    color: #8FA68E;
+    font-size: 16px;
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+</style>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                    </div>
+                    <div class="header-text">
+                        <h1>Analisis Butir Soal</h1>
+                        <p>Sistem Analisis Item Test Otomatis</p>
+                    </div>
+                </div>
+                <button id="resetBtn" class="reset-btn" style="display: none;">Mulai Baru</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Progress Indicator -->
+    <div class="progress-container">
+        <div class="container">
+            <div class="progress-steps">
+                <div class="step active" id="step1">
+                    <div class="step-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <span>Pengaturan</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" id="step2">
+                    <div class="step-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                    </div>
+                    <span>Input Data</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" id="step3">
+                    <div class="step-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"/>
+                            <line x1="12" y1="20" x2="12" y2="4"/>
+                            <line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                    </div>
+                    <span>Hasil Analisis</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Setup Form -->
+            <div id="setupSection" class="section active">
+                <div class="setup-form">
+                    <div class="form-header">
+                        <div class="form-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </div>
+                        <h2>Pengaturan Awal</h2>
+                        <p>Masukkan informasi dasar untuk memulai analisis butir soal</p>
+                    </div>
+
+                    <form id="setupForm">
+                        <div class="form-group">
+                            <label>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                                Jumlah Siswa
+                            </label>
+                            <input type="number" id="studentCount" placeholder="Contoh: 30" min="5" required>
+                            <div class="error-message" id="studentCountError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14,2 14,8 20,8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <polyline points="10,9 9,9 8,9"/>
+                                </svg>
+                                Jumlah Soal
+                            </label>
+                            <input type="number" id="questionCount" placeholder="Contoh: 25" min="5" required>
+                            <div class="error-message" id="questionCountError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14,2 14,8 20,8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <polyline points="10,9 9,9 8,9"/>
+                                </svg>
+                                Kunci Jawaban
+                            </label>
+                            <input type="text" id="correctAnswers" placeholder="Contoh: ABCDDACBAEABCD (tanpa spasi)" required>
+                            <div class="error-message" id="correctAnswersError"></div>
+                            <p class="help-text">Masukkan kunci jawaban berurutan dari soal 1 hingga soal terakhir (A/B/C/D/E)</p>
+                        </div>
+
+                        <div class="info-box">
+                            <h3>Catatan Penting:</h3>
+                            <ul>
+                                <li>• Minimal 5 siswa dan 5 soal untuk analisis yang valid</li>
+                                <li>• Kunci jawaban hanya menggunakan pilihan A, B, C, D, atau E</li>
+                                <li>• Sistem akan menghitung tingkat kesukaran, daya pembeda, validitas, dan reliabilitas</li>
+                            </ul>
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            <span>Lanjut ke Input Data</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                                <polyline points="12,5 19,12 12,19"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Data Entry Section -->
+            <div id="dataSection" class="section">
+                <div class="data-entry">
+                    <div class="section-header">
+                        <div class="header-left">
+                            <div class="section-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14,2 14,8 20,8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <polyline points="10,9 9,9 8,9"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2>Input Data Siswa</h2>
+                                <p id="dataInfo"></p>
+                            </div>
+                        </div>
+                        <button id="toggleAnswersBtn" class="btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <span>Tampilkan Kunci</span>
+                        </button>
+                    </div>
+
+                    <div id="correctAnswersDisplay" class="correct-answers" style="display: none;">
+                        <h3>Kunci Jawaban:</h3>
+                        <div id="answersGrid" class="answers-grid"></div>
+                    </div>
+
+                    <div class="import-section">
+                        <h3>Import dari Spreadsheet</h3>
+                        <textarea id="pasteData" placeholder="Paste data dari Excel/Spreadsheet di sini...&#10;Format: Nama[TAB]Jawaban&#10;Contoh:&#10;Ahmad Fauzi	ABCDDACBAE&#10;Siti Nurhaliza	ABBCDACBAE"></textarea>
+                        <div class="import-actions">
+                            <button id="importBtn" class="btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7,10 12,15 17,10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                Import Data
+                            </button>
+                            <button id="generateSampleBtn" class="btn-secondary">Generate Sample Data</button>
+                        </div>
+                    </div>
+
+                    <div class="data-table-container">
+                        <div class="table-header">
+                            <h3>Tabel Data Siswa</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="dataTable" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th class="name-column">Nama Siswa</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dataTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="section-actions">
+                        <button id="backToSetupBtn" class="btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12"/>
+                                <polyline points="12,19 5,12 12,5"/>
+                            </svg>
+                            Kembali
+                        </button>
+                        <button id="analyzeBtn" class="btn-primary">
+                            <span>Analisis Data</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                                <polyline points="12,5 19,12 12,19"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="section">
+                <div class="results-display">
+                    <div class="section-header">
+                        <div class="header-left">
+                            <div class="section-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"/>
+                                    <line x1="12" y1="20" x2="12" y2="4"/>
+                                    <line x1="6" y1="20" x2="6" y2="14"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2>Hasil Analisis Butir Soal</h2>
+                                <p id="resultsInfo"></p>
+                            </div>
+                        </div>
+                        <button id="downloadBtn" class="btn-primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Unduh CSV
+                        </button>
+                    </div>
+
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <div class="card-icon blue">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                                </svg>
+                            </div>
+                            <div class="card-content">
+                                <p>Tingkat Kesukaran</p>
+                                <span id="avgDifficulty">-</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-icon green">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12,6 12,12 16,14"/>
+                                </svg>
+                            </div>
+                            <div class="card-content">
+                                <p>Daya Pembeda</p>
+                                <span id="avgDiscrimination">-</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-icon purple">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22,4 12,14.01 9,11.01"/>
+                                </svg>
+                            </div>
+                            <div class="card-content">
+                                <p>Validitas Rata-rata</p>
+                                <span id="avgValidity">-</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-icon orange">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="12"/>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                            </div>
+                            <div class="card-content">
+                                <p>Reliabilitas (KR-20)</p>
+                                <span id="reliability">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-tabs">
+                        <div class="tab-nav">
+                            <button class="tab-btn active" data-tab="summary">Ringkasan</button>
+                            <button class="tab-btn" data-tab="difficulty">Tingkat Kesukaran</button>
+                            <button class="tab-btn" data-tab="discrimination">Daya Pembeda</button>
+                            <button class="tab-btn" data-tab="validity">Validitas</button>
+                            <button class="tab-btn" data-tab="reliability">Reliabilitas</button>
+                        </div>
+
+                        <div class="tab-content">
+                            <div id="summaryTab" class="tab-pane active">
+                                <div class="table-wrapper">
+                                    <table id="summaryTable" class="results-table">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Tingkat Kesukaran</th>
+                                                <th>Daya Pembeda</th>
+                                                <th>Validitas</th>
+                                                <th>Kategori</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="summaryTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div id="difficultyTab" class="tab-pane">
+                                <div class="interpretation-box">
+                                    <h3>Interpretasi Tingkat Kesukaran:</h3>
+                                    <ul>
+                                        <li>• <span class="easy">Mudah (≥ 0.70):</span> Lebih dari 70% siswa menjawab benar</li>
+                                        <li>• <span class="medium">Sedang (0.30 - 0.69):</span> 30-69% siswa menjawab benar</li>
+                                        <li>• <span class="hard">Sukar (< 0.30):</span> Kurang dari 30% siswa menjawab benar</li>
+                                    </ul>
+                                </div>
+                                <div id="difficultyCards" class="metric-cards"></div>
+                            </div>
+
+                            <div id="discriminationTab" class="tab-pane">
+                                <div class="interpretation-box">
+                                    <h3>Interpretasi Daya Pembeda:</h3>
+                                    <ul>
+                                        <li>• <span class="excellent">Sangat Baik (≥ 0.40):</span> Soal dapat membedakan dengan baik</li>
+                                        <li>• <span class="good">Baik (0.30 - 0.39):</span> Soal dapat diterima dengan baik</li>
+                                        <li>• <span class="fair">Cukup (0.20 - 0.29):</span> Soal perlu diperbaiki</li>
+                                        <li>• <span class="poor">Kurang (< 0.20):</span> Soal perlu diganti</li>
+                                    </ul>
+                                </div>
+                                <div id="discriminationCards" class="metric-cards"></div>
+                            </div>
+
+                            <div id="validityTab" class="tab-pane">
+                                <div class="interpretation-box">
+                                    <h3>Validitas Item (Korelasi Product Moment):</h3>
+                                    <p>Validitas menunjukkan seberapa baik setiap butir soal mengukur kemampuan yang sama dengan tes secara keseluruhan. Nilai positif menunjukkan korelasi yang baik, semakin tinggi nilainya semakin valid soal tersebut.</p>
+                                </div>
+                                <div id="validityCards" class="metric-cards"></div>
+                            </div>
+
+                            <div id="reliabilityTab" class="tab-pane">
+                                <div class="interpretation-box">
+                                    <h3>Reliabilitas Tes (Kuder-Richardson 20):</h3>
+                                    <p>Reliabilitas menunjukkan konsistensi dan keandalan tes secara keseluruhan.</p>
+                                    <ul>
+                                        <li>• <span class="excellent">Sangat Tinggi (≥ 0.80):</span> Tes sangat reliabel</li>
+                                        <li>• <span class="good">Tinggi (0.60 - 0.79):</span> Tes reliabel</li>
+                                        <li>• <span class="fair">Cukup (0.40 - 0.59):</span> Reliabilitas cukup</li>
+                                        <li>• <span class="poor">Rendah (< 0.40):</span> Reliabilitas rendah</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="reliability-display">
+                                    <div class="reliability-value">
+                                        <div id="reliabilityValue" class="value">-</div>
+                                        <div id="reliabilityCategory" class="category">-</div>
+                                        <div class="progress-bar">
+                                            <div id="reliabilityProgress" class="progress"></div>
+                                        </div>
+                                        <p>Nilai reliabilitas tes menggunakan formula Kuder-Richardson 20 (KR-20)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-actions">
+                        <button id="backToDataBtn" class="btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12"/>
+                                <polyline points="12,19 5,12 12,5"/>
+                            </svg>
+                            Kembali ke Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
